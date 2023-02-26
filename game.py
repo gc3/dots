@@ -9,21 +9,35 @@
 
 class DotsGame():
   # XXX gc3: FIXME -- doc blocks?
-  DotsBoard board_; # XXX gc3: FIXME how do i make class members?
 
-  def __init__(self): # XXX gc3: what does this need to know to run the game?
+  DOT_EMPTY = 0
+  DOT_BLUE  = 1
+  DOT_GREEN = 2
+  DOT_RED   = 3
+
+  # XXX gc3: what does this need to know to run the game?
+  def __init__(self, moves:int=20, width:int=10, height:int=10):
+    self._board = [[0 for x in range(width)] for y in range(height)];
+    self._score = 0;
+    self._moves = moves;
+
     print("XXX gc3: game logic constructor")
+    print(self._board);
 
-class DotsBoard(): # XXX gc3: do i strictly need this or maybe just a matrix?
-  def __init__(self):
-    print("XXX gc3: board constructor")
+  def selectDot (self, y:int, x:int):
+    # XXX gc3: TODO handle what happens when someone clicks on a dot
+    self.getDot(y, x);
 
-class DotsDot():
-  def __init__(self):
-    print("XXX gc3: dot constructor")
+  def setDot(self, y:int, x:int, color:int):
+    self._board[y][x] = color;
+    print (self._board);
 
-class DotsPlayer():
-  def __init__(self):
-    print("XXX gc3: player constructor")
+  def getDot(self, y:int, x:int) -> int:
+    print (self._board[y][x]);
+    return self._board[y][x];
 
+  def getScore(self) -> int:
+    return self._score;
 
+  def isGameOver(self) -> bool:
+    return (self._moves == 0);
