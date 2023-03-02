@@ -10,34 +10,93 @@
 import wx
 import game
 
+###########################################################
+#
+# Dots Frame
+#   The main frame for a dots game that contains the board
+#
 class DotsFrame(wx.Frame):
   def __init__(self, parent, ID, title, game):
-    print("XXX gc3: in Dots Frame constructor")
-    self._game = game;
-
     wx.Frame.__init__(self, parent, ID, title, size=(800, 800))
 
-    button = wx.Button(self, wx.ID_ANY, "Select a Blue")
-    button.Bind(wx.EVT_BUTTON, self.onClick)
+    self._game = game;
 
-    button2 = wx.Button(self, wx.ID_ANY, "Select a Red")
-    button2.Bind(wx.EVT_BUTTON, self.onClick2)
-
-    panel1 = wx.Panel(self,-1, style=wx.SUNKEN_BORDER)
-    panel1.SetBackgroundColour("BLUE")
-
-    panel2 = wx.Panel(self,-1, style=wx.SUNKEN_BORDER)
-    panel2.SetBackgroundColour("RED")
-
+		# Setting up the dots board in a simple layout
+    board = DotsBoard(self, game)
     box = wx.BoxSizer(wx.VERTICAL)
-    box.Add(panel1, 1, wx.EXPAND)
-    box.Add(panel2, 2, wx.EXPAND)
-    box.Add(button, 3, wx.EXPAND)
-    box.Add(button2, 4, wx.EXPAND)
+    box.Add(board.getBoard(), 3, wx.EXPAND)
 
     self.SetAutoLayout(True)
     self.SetSizer(box)
     self.Layout()
+
+  #
+  # Menus and click handlers for menu items
+  #
+  def createFileMenus(self):
+    # create a basic file menu in the menubar
+    filemenu = wx.Menu()
+    menuitem = filemenu.Append(wx.ID_ANY, "About", "About this Program")
+    self.Bind(wx.EVT_MENU, self.onAbout, menuitem)
+
+    filemenu.AppendSeparator()
+
+    menuitem = filemenu.Append(wx.ID_ANY, "New Game", "Start a new game")
+    self.Bind(wx.EVT_MENU, self.onNewGame, menuitem)
+
+    filemenu.AppendSeparator()
+
+    menuitem = filemenu.Append(wx.ID_ANY, "Quit", "Quit, mang!")
+    self.Bind(wx.EVT_MENU, self.onQuit, menuitem)
+
+    menubar = wx.MenuBar()
+    menubar.Append(filemenu,"File")
+    self.SetMenuBar(menubar)
+
+  def onAbout(self,  event):
+		# A message dialog box with an OK button
+    dialog = wx.MessageDialog(self, "My Dots!", "About Dots", wx.OK)
+    dialog.ShowModal()
+    dialog.Destroy()
+
+  def onQuit(self, event):
+    # Someone hit the quit button!
+    self.Close(True)
+
+  def onNewGame(self, event):
+    # XXX gc3: FIXME  create a new game of some kind. reset scores and re-init
+    #                 the board, ... is this the same thing as should happen on
+    #                 startup? probably
+    print ("XXX gc3: new game requested!");
+
+
+###########################################################
+#
+# DotsBoard
+#   The the dots board with dots in it you can click on
+#
+#   XXX gc3: FIXME should this actually *be* a kind of panel / box instead of
+#                  contain one? is a or has a? probably is a since i can get rid
+#                  of the parent stuff when i'm beyond the testing buttons
+#                  phase
+#
+class DotsBoard():
+  def __init__(self, parent, game):
+    self._parent = parent
+    self._game = game
+
+    self._box = wx.BoxSizer(wx.VERTICAL)
+    button = wx.Button(self._parent, wx.ID_ANY, "Select a Blue")
+    button.Bind(wx.EVT_BUTTON, self.onClick)
+
+    button2 = wx.Button(self._parent, wx.ID_ANY, "Select a Red")
+    button2.Bind(wx.EVT_BUTTON, self.onClick2)
+
+    self._box.Add(button, 1, wx.EXPAND)
+    self._box.Add(button2, 2, wx.EXPAND)
+
+  def getBoard(self):
+    return self._box;
 
   def onClick(self, event):
     print("XXX gc3: clicked 1")
@@ -51,10 +110,12 @@ class DotsFrame(wx.Frame):
     self._game.setDot(0, 0, game.DotsGame.DOT_RED);
     self._game.selectDot(0, 0);
 
-class DotsBoard():
-  def __init__(self):
-    print("XXX gc3: board constructor")
-
+###########################################################
+#
+# DotsDot
+#   The the dots a board is composed of that are like items you
+#   can multi-select via dragging as you play the game
+#
 class DotsDot():
   def __init__(self):
     print("XXX gc3: dot constructor")
