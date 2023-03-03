@@ -6,43 +6,71 @@
   Date:
   Description: game logic lives here
 """
+import random
 
 class DotsGame():
   # XXX gc3: FIXME -- doc blocks?
 
-  DOT_EMPTY = 0
-  DOT_BLUE  = 1
-  DOT_GREEN = 2
-  DOT_RED   = 3
+  DOT_BLUE  =  0
+  DOT_GREEN =  1
+  DOT_RED   =  2
+  DOT_MAX   =  3
 
-  def __init__(self, moves:int=20, width:int=10, height:int=10) -> None:
-    self._board = [[0 for x in range(width)] for y in range(height)];
-    self._score = 0;
-    self._moves = moves;
+  def __init__(self, max_moves:int=20, height:int=10, width:int=10) -> None:
     self._width = width;
     self._height = height;
+    self._moves_max = max_moves;
 
-    if __debug__:
-      self.printBoard()
+    self.resetGame()
 
   #
   # Handle dots
+  #   XXX gc3: FIXME -- using tuples for a dot here is kinda sketchy
   #
-  def selectDot (self, y:int, x:int) -> None:
-    # XXX gc3: TODO handle what happens when someone clicks on a dot and what
-    #               about dragging?
-    self.getDot(y, x);
+  def resetGame(self) -> None:
+    self._moves_curr = 0;
+    self._score = 0;
+    self._currentSelection = [];
+    self.initializeBoard(self._height, self._width);
 
-  def setDot(self, y:int, x:int, color:int) -> None:
-    if (self.isLocationValid(y, x)):
-      self._board[y][x] = color;
+  def initializeBoard(self, height:int, width:int) -> None:
+    self._board = [
+      [random.randrange(self.DOT_MAX) for x in range(width)]
+      for y in range(height)
+    ]
 
     if __debug__:
       self.printBoard()
+
+  def selectDot (self, y:int, x:int) -> None:
+    if (not self.isLocationValid(y, x)):
+      return;
+
+    new_dot = (y, x, self.getDot(y, x))
+
+    # starting a new selection, so add the first dot
+    if (not self._currentSelection):
+      self._currentSelection.append(new_dot);
+
+    # if we have a selection going, reset it if
+    #   - is already in the selection set
+    #   - is not adjascent to an existing dot in the selection
+    #   - is a different color than all the existing dots in the selection
+    elif (new_dot in self._currentSelection or
+          False or # XXX gc3: TODO check adjascency
+          self._currentSelection[0][2] != new_dot[2]): # XXX gc3: FIXME janky AF
+      self._currentSelection.clear()
+
+    # otherwise add this dot to the current set of selected dots
+    else:
+      self._currentSelection.append(new_dot);
+
+    print (self._currentSelection); # XXX gc3; FIXME -- kill this
 
   def getDot(self, y:int, x:int) -> int:
     if (self.isLocationValid(y, x)):
       return self._board[y][x];
+
   #
   # Handle scoring
   #
@@ -53,7 +81,7 @@ class DotsGame():
   # Handle moves / game status
   #
   def isGameOver(self) -> bool:
-   return (self._moves == 0);
+   return (self._moves_curr == 0);
 
   #
   # Utilites

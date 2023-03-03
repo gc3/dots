@@ -22,9 +22,9 @@ class DotsFrame(wx.Frame):
     self._game = game;
 
 		# Setting up the dots board in a simple layout
-    board = DotsBoard(self, game)
+    self._board = DotsBoard(self, self._game)
     box = wx.BoxSizer(wx.VERTICAL)
-    box.Add(board.getBoard(), 3, wx.EXPAND)
+    box.Add(self._board, 0, wx.EXPAND)
 
     self.CreateStatusBar() # A Statusbar in the bottom of the window
     self.createFileMenus() # Setting up the menus and menubar.
@@ -68,11 +68,11 @@ class DotsFrame(wx.Frame):
     self.Close(True)
 
   def onNewGame(self, event):
-    # XXX gc3: FIXME  create a new game of some kind. reset scores and re-init
-    #                 the board, ... is this the same thing as should happen on
-    #                 startup? probably
+    self._game.resetGame();
+    self._board.resetBoard();
+
     if __debug__:
-      print ("New game requested!");
+      print ("New game! Reset all the things");
 
 
 ###########################################################
@@ -80,25 +80,29 @@ class DotsFrame(wx.Frame):
 # DotsBoard
 #   The the dots board with dots in it you can click on
 #
-#   XXX gc3: FIXME should this actually *be* a kind of panel / box instead of
-#                  contain one? is a or has a? probably is a since i can get rid
-#                  of the parent stuff when i'm beyond the testing buttons
-#                  phase
-#
-class DotsBoard():
-  def __init__(self, parent, game):
+class DotsBoard(wx.GridSizer):
+  def __init__(self, parent, game:game.DotsGame):
+    wx.GridSizer.__init__(self, game.getWidth(), game.getHeight(), 5, 5)
     self._game = game
-    self._grid = wx.GridSizer(self._game.getWidth(), self._game.getHeight(), 0,
-    0)
+    self._parent = parent
 
+    # initialize the board by adding all the button objects
     for y in range(self._game.getHeight()):
       for x in range(self._game.getWidth()):
-        button = DotsDot(parent, self._game, y, x)
-        self._grid.Add(button, y+x, wx.EXPAND)
-      self._grid.Add
+        button = DotsDot(self._parent, self._game, y, x)
+        self.Add(button, y+x, wx.EXPAND)
 
-  def getBoard(self):
-    return self._grid;
+    self.resetBoard()
+
+  #
+  # Reset the board by applying the color changes to the ui
+  #     XXX gc3: FIXME -- need to solidify a comment style for methods&classes
+  def resetBoard(self):
+    for y in range(self._game.getHeight()):
+      for x in range(self._game.getWidth()):
+        None;
+        #button = self.Get(y+x) # XXX gc3: TODO set some colors yo!
+        #button.changeColor()
 
 
 ###########################################################
@@ -110,7 +114,6 @@ class DotsBoard():
 class DotsDot(wx.Button):
   def __init__(self, parent, game:game.DotsGame, y:int, x:int):
     wx.Button.__init__(self ,parent, wx.ID_ANY, label=str(y)+", "+str(x));
-    # XXX  gc3 FIXME: access to game vs parent needs to be addressed
     self._y = y
     self._x = x
     self._game = game
@@ -119,7 +122,5 @@ class DotsDot(wx.Button):
   def onClick(self, event):
     if __debug__:
       print("User clicked (" + str(self._y) + ", " + str(self._x) + ")");
-    self._game.setDot(self._y, self._x, self._game.DOT_BLUE);
+
     self._game.selectDot(self._y, self._x);
-
-
