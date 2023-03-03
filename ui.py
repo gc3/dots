@@ -26,6 +26,8 @@ class DotsFrame(wx.Frame):
     box = wx.BoxSizer(wx.VERTICAL)
     box.Add(board.getBoard(), 3, wx.EXPAND)
 
+    self.CreateStatusBar() # A Statusbar in the bottom of the window
+    self.createFileMenus() # Setting up the menus and menubar.
     self.SetAutoLayout(True)
     self.SetSizer(box)
     self.Layout()
@@ -61,13 +63,16 @@ class DotsFrame(wx.Frame):
 
   def onQuit(self, event):
     # Someone hit the quit button!
+    if __debug__:
+      print ("Someone hit the quit button!");
     self.Close(True)
 
   def onNewGame(self, event):
     # XXX gc3: FIXME  create a new game of some kind. reset scores and re-init
     #                 the board, ... is this the same thing as should happen on
     #                 startup? probably
-    print ("XXX gc3: new game requested!");
+    if __debug__:
+      print ("New game requested!");
 
 
 ###########################################################
@@ -82,33 +87,19 @@ class DotsFrame(wx.Frame):
 #
 class DotsBoard():
   def __init__(self, parent, game):
-    self._parent = parent
     self._game = game
+    self._grid = wx.GridSizer(self._game.getWidth(), self._game.getHeight(), 0,
+    0)
 
-    self._box = wx.BoxSizer(wx.VERTICAL)
-    button = wx.Button(self._parent, wx.ID_ANY, "Select a Blue")
-    button.Bind(wx.EVT_BUTTON, self.onClick)
-
-    button2 = wx.Button(self._parent, wx.ID_ANY, "Select a Red")
-    button2.Bind(wx.EVT_BUTTON, self.onClick2)
-
-    self._box.Add(button, 1, wx.EXPAND)
-    self._box.Add(button2, 2, wx.EXPAND)
+    for y in range(self._game.getHeight()):
+      for x in range(self._game.getWidth()):
+        button = DotsDot(parent, self._game, y, x)
+        self._grid.Add(button, y+x, wx.EXPAND)
+      self._grid.Add
 
   def getBoard(self):
-    return self._box;
+    return self._grid;
 
-  def onClick(self, event):
-    print("XXX gc3: clicked 1")
-    print(event)
-    self._game.setDot(1, 1, game.DotsGame.DOT_BLUE);
-    self._game.selectDot(1, 1);
-
-  def onClick2(self, event):
-    print("XXX gc3: clicked 2")
-    print(event)
-    self._game.setDot(0, 0, game.DotsGame.DOT_RED);
-    self._game.selectDot(0, 0);
 
 ###########################################################
 #
@@ -116,6 +107,19 @@ class DotsBoard():
 #   The the dots a board is composed of that are like items you
 #   can multi-select via dragging as you play the game
 #
-class DotsDot():
-  def __init__(self):
-    print("XXX gc3: dot constructor")
+class DotsDot(wx.Button):
+  def __init__(self, parent, game:game.DotsGame, y:int, x:int):
+    wx.Button.__init__(self ,parent, wx.ID_ANY, label=str(y)+", "+str(x));
+    # XXX  gc3 FIXME: access to game vs parent needs to be addressed
+    self._y = y
+    self._x = x
+    self._game = game
+    self.Bind(wx.EVT_BUTTON, self.onClick)
+
+  def onClick(self, event):
+    if __debug__:
+      print("User clicked (" + str(self._y) + ", " + str(self._x) + ")");
+    self._game.setDot(self._y, self._x, self._game.DOT_BLUE);
+    self._game.selectDot(self._y, self._x);
+
+

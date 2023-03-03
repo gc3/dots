@@ -19,8 +19,6 @@ game = game.DotsGame()
 
 # instantiate the ui
 frame = ui.DotsFrame(None, wx.ID_ANY, "Dots by gc3", game)
-frame.CreateStatusBar() # A Statusbar in the bottom of the window
-frame.createFileMenus() # Setting up the menus and menubar.
 frame.Show(True)
 
 # go go go!
