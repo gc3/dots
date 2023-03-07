@@ -9,11 +9,6 @@
 import random
 
 class DotsGame():
-  DOT_BLUE  =  0
-  DOT_GREEN =  1
-  DOT_RED   =  2
-  DOT_MAX   =  3
-
   def __init__(self, max_moves:int=20, height:int=10, width:int=10) -> None:
     self._width = width;
     self._height = height;
@@ -34,14 +29,14 @@ class DotsGame():
 
   def initializeBoard(self) -> None:
     self._board = [
-      [random.randrange(self.DOT_MAX) for x in range(self._width)]
+      [random.randrange(DotsColor.DOT_MAX) for x in range(self._width)]
       for y in range(self._height)
     ]
 
     if __debug__:
       self.printBoard()
 
-  def selectDot(self, y:int, x:int) -> None:
+  def selectDot(self, y:int, x:int) -> bool:
     if (not self.isLocationValid(y, x)):
       return;
 
@@ -59,12 +54,14 @@ class DotsGame():
           False or # XXX gc3: TODO check adjascency
           self._currentSelection[0][2] != new_dot[2]): # XXX gc3: FIXME janky AF
       self._currentSelection.clear()
+      return False;
 
     # otherwise add this dot to the current set of selected dots
     else:
       self._currentSelection.append(new_dot);
 
     print (self._currentSelection); # XXX gc3; FIXME -- kill this
+    return True;
 
   def getDot(self, y:int, x:int) -> int:
     if (self.isLocationValid(y, x)):
@@ -110,3 +107,12 @@ class DotsGame():
       print (row);
 
     print ("");
+
+class DotsColor:
+  DOT_BLUE  =  0
+  DOT_GREEN =  1
+  DOT_RED   =  2
+  DOT_MAX   =  3
+
+  def __init__(self, color:int) -> None:
+    self._color = color

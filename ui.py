@@ -9,6 +9,7 @@
 
 import wx
 import game
+from game import DotsColor
 
 ###########################################################
 #
@@ -121,7 +122,7 @@ class DotsBoard(wx.GridSizer):
 #   The the dots a board is composed of that are like items you
 #   can multi-select via dragging as you play the game
 #
-class DotsDot(wx.Button):
+class DotsDot(wx.ToggleButton):
   def __init__(self, parent, game:game.DotsGame, y:int, x:int):
     wx.Button.__init__(self, parent, wx.ID_ANY);
 
@@ -131,7 +132,22 @@ class DotsDot(wx.Button):
     self._color = game.getDot(y,x)
 
     self.SetLabel(str(self._color));
-    self.Bind(wx.EVT_BUTTON, self.onClick)
+    self.SetBackgroundColour(self.getRGB())
+    self.Bind(wx.EVT_TOGGLEBUTTON, self.onClick)
+
+  def getRGB(self):
+    match self._color:
+      case DotsColor.DOT_BLUE:
+        return (0, 100, 255, 255)
+
+      case DotsColor.DOT_GREEN:
+        return (0, 200, 0, 255)
+
+      case DotsColor.DOT_RED:
+        return (200, 0, 0, 255)
+
+      case _:
+        return (0, 0, 0, 0)
 
   def onClick(self, event):
     """
@@ -140,4 +156,9 @@ class DotsDot(wx.Button):
     if __debug__:
       print("User clicked (" + str(self._y) + ", " + str(self._x) + ")");
 
-    self._game.selectDot(self._y, self._x);
+    selected = self._game.selectDot(self._y, self._x);
+    if (not selected):
+      # XXX gc3: FIXME in this case we have to undo all the selected dots >.<
+      print ("XXX gc3: figure out hwo to undo all the selected dots, yo");
+    else:
+      self.SetValue(True);
