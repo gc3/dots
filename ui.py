@@ -24,7 +24,7 @@ class DotsFrame(wx.Frame):
 		# Setting up the dots board in a simple layout
     self._board = DotsBoard(self, self._game)
     box = wx.BoxSizer(wx.VERTICAL)
-    box.Add(self._board, 0, wx.EXPAND)
+    box.Add(self._board, wx.SHAPED)
 
     self.CreateStatusBar() # A Statusbar in the bottom of the window
     self.createFileMenus() # Setting up the menus and menubar.
@@ -32,11 +32,10 @@ class DotsFrame(wx.Frame):
     self.SetSizer(box)
     self.Layout()
 
-  #
-  # Menus and click handlers for menu items
-  #
   def createFileMenus(self):
-    # create a basic file menu in the menubar
+    """
+      create a basic file menu in the menubar
+    """
     filemenu = wx.Menu()
     menuitem = filemenu.Append(wx.ID_ANY, "About", "About this Program")
     self.Bind(wx.EVT_MENU, self.onAbout, menuitem)
@@ -56,13 +55,17 @@ class DotsFrame(wx.Frame):
     self.SetMenuBar(menubar)
 
   def onAbout(self,  event):
-		# A message dialog box with an OK button
+    """
+		  A message dialog box with an OK button
+    """
     dialog = wx.MessageDialog(self, "My Dots!", "About Dots", wx.OK)
     dialog.ShowModal()
     dialog.Destroy()
 
   def onQuit(self, event):
-    # Someone hit the quit button!
+    """
+      Someone hit the quit button!
+    """
     if __debug__:
       print ("Someone hit the quit button!");
     self.Close(True)
@@ -83,26 +86,33 @@ class DotsFrame(wx.Frame):
 class DotsBoard(wx.GridSizer):
   def __init__(self, parent, game:game.DotsGame):
     wx.GridSizer.__init__(self, game.getWidth(), game.getHeight(), 5, 5)
+
     self._game = game
     self._parent = parent
 
-    # initialize the board by adding all the button objects
+    self.initializeBoard();
+
+  def initializeBoard(self):
+    """
+      Initialize a blank board by adding new dots to it
+    """
     for y in range(self._game.getHeight()):
       for x in range(self._game.getWidth()):
         button = DotsDot(self._parent, self._game, y, x)
         self.Add(button, y+x, wx.EXPAND)
 
-    self.resetBoard()
+    self.Fit(self._parent); # tell the parent window to resize to match the dots
+    self.Layout();          # force the re layout of the dots
 
-  #
-  # Reset the board by applying the color changes to the ui
-  #     XXX gc3: FIXME -- need to solidify a comment style for methods&classes
   def resetBoard(self):
-    for y in range(self._game.getHeight()):
-      for x in range(self._game.getWidth()):
-        None;
-        #button = self.Get(y+x) # XXX gc3: TODO set some colors yo!
-        #button.changeColor()
+    """
+      Reset the board getting rid of all the dots and recreating them using the
+      game data that we already know. This means you should reset the game data
+      BEFORE calling this.
+    """
+    self.Clear(True);
+    self.initializeBoard();
+
 
 
 ###########################################################
@@ -113,13 +123,20 @@ class DotsBoard(wx.GridSizer):
 #
 class DotsDot(wx.Button):
   def __init__(self, parent, game:game.DotsGame, y:int, x:int):
-    wx.Button.__init__(self ,parent, wx.ID_ANY, label=str(y)+", "+str(x));
+    wx.Button.__init__(self, parent, wx.ID_ANY);
+
     self._y = y
     self._x = x
     self._game = game
+    self._color = game.getDot(y,x)
+
+    self.SetLabel(str(self._color));
     self.Bind(wx.EVT_BUTTON, self.onClick)
 
   def onClick(self, event):
+    """
+      Handle a click by adding it to the set of currently selected dots
+    """
     if __debug__:
       print("User clicked (" + str(self._y) + ", " + str(self._x) + ")");
 

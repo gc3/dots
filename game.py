@@ -9,8 +9,6 @@
 import random
 
 class DotsGame():
-  # XXX gc3: FIXME -- doc blocks?
-
   DOT_BLUE  =  0
   DOT_GREEN =  1
   DOT_RED   =  2
@@ -26,23 +24,24 @@ class DotsGame():
   #
   # Handle dots
   #   XXX gc3: FIXME -- using tuples for a dot here is kinda sketchy
+  #       need to make a board and a dot class ....
   #
   def resetGame(self) -> None:
     self._moves_curr = 0;
     self._score = 0;
     self._currentSelection = [];
-    self.initializeBoard(self._height, self._width);
+    self.initializeBoard();
 
-  def initializeBoard(self, height:int, width:int) -> None:
+  def initializeBoard(self) -> None:
     self._board = [
-      [random.randrange(self.DOT_MAX) for x in range(width)]
-      for y in range(height)
+      [random.randrange(self.DOT_MAX) for x in range(self._width)]
+      for y in range(self._height)
     ]
 
     if __debug__:
       self.printBoard()
 
-  def selectDot (self, y:int, x:int) -> None:
+  def selectDot(self, y:int, x:int) -> None:
     if (not self.isLocationValid(y, x)):
       return;
 
@@ -103,9 +102,11 @@ class DotsGame():
 
   def printBoard(self) -> None:
     print ("Board Contents:");
+
     for y in range(self._height):
       row = [];
       for x in range(self._width):
         row.append(self._board[y][x]);
       print (row);
+
     print ("");
