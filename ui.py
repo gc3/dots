@@ -2,14 +2,14 @@
 
 """
   Author: gc3
-  Program:
-  Date:
+  Program: Dots, the game
+  Date: March, 2023
   Description: all the ui lives here for convenience as a learner project
 """
 
 import wx
 import game
-from game import DotsColor
+from util import DotsColor
 
 ###########################################################
 #
@@ -27,8 +27,16 @@ class DotsFrame(wx.Frame):
     box = wx.BoxSizer(wx.VERTICAL)
     box.Add(self._board, wx.SHAPED)
 
+    # Because we dont have touch events, we manually handle multi-selection, and
+    # this submits the currently selected dots as a "move"
+    submit = wx.Button(self, wx.ID_ANY, "Submit Selection");
+    submit.Bind(wx.EVT_BUTTON, self.onSubmitSelection)
+    box.AddSpacer(10)
+    box.Add(submit)
+
     self.CreateStatusBar() # A Statusbar in the bottom of the window
     self.createFileMenus() # Setting up the menus and menubar.
+
     self.SetAutoLayout(True)
     self.SetSizer(box)
     self.Layout()
@@ -72,12 +80,38 @@ class DotsFrame(wx.Frame):
     self.Close(True)
 
   def onNewGame(self, event):
-    self._game.resetGame();
-    self._board.resetBoard();
+    """
+      Someone has requested a new game. Reset the game logic and
+      the board that represents it afterwards
+    """
+    self._game.reset();
+    self._board.reset();
 
     if __debug__:
       print ("New game! Reset all the things");
 
+  def onSubmitSelection(self, event):
+    """
+      The user is requesting to lock in their selected dots and 'make their
+      move', so we will execute that move and optionally reset the board if we
+      need to fill in new dots.
+    """
+    if __debug__:
+      print ("Selection Submitted for Evaluation!")
+
+    if (self._game.executeSelection()):
+      self._board.reset()
+
+  def unselectAllDots(self):
+    """
+      A pass through to the board so we dont break encapsulation that
+      ... asks the unselects the currently selected dots.
+    """
+    return self._board.unselectAllDots()
+
+  # XXX gc3 - TODO
+  #   - add a score and moves left counter to the UI
+  #   - add a game over pop up and have them choose 'quit' or 'play again'
 
 ###########################################################
 #
@@ -91,9 +125,9 @@ class DotsBoard(wx.GridSizer):
     self._game = game
     self._parent = parent
 
-    self.initializeBoard();
+    self.initialize();
 
-  def initializeBoard(self):
+  def initialize(self):
     """
       Initialize a blank board by adding new dots to it
     """
@@ -105,18 +139,29 @@ class DotsBoard(wx.GridSizer):
     self.Fit(self._parent); # tell the parent window to resize to match the dots
     self.Layout();          # force the re layout of the dots
 
-  def resetBoard(self):
+  def reset(self):
     """
       Reset the board getting rid of all the dots and recreating them using the
       game data that we already know. This means you should reset the game data
       BEFORE calling this.
     """
     self.Clear(True);
-    self.initializeBoard();
+    self.initialize();
 
+  def unselectAllDots(self):
+    """
+      Make all the dots appear to be unselected.
+    """
 
+    # skip unselecting the dots if the game has an active selection
+    if (self._game.hasSelection()):
+      return;
 
-###########################################################
+    # we 'unselect' dots by simply toggling them to change their brightness
+    for item in self.GetChildren():
+      item.GetWindow().SetValue(False);
+
+############################################################
 #
 # DotsDot
 #   The the dots a board is composed of that are like items you
@@ -128,26 +173,13 @@ class DotsDot(wx.ToggleButton):
 
     self._y = y
     self._x = x
+    self._parent = parent
     self._game = game
-    self._color = game.getDot(y,x)
+    self._color = game.getDotColor(y,x)
 
     self.SetLabel(str(self._color));
-    self.SetBackgroundColour(self.getRGB())
+    self.SetBackgroundColour(DotsColor.getRGB(self._color))
     self.Bind(wx.EVT_TOGGLEBUTTON, self.onClick)
-
-  def getRGB(self):
-    match self._color:
-      case DotsColor.DOT_BLUE:
-        return (0, 100, 255, 255)
-
-      case DotsColor.DOT_GREEN:
-        return (0, 200, 0, 255)
-
-      case DotsColor.DOT_RED:
-        return (200, 0, 0, 255)
-
-      case _:
-        return (0, 0, 0, 0)
 
   def onClick(self, event):
     """
@@ -156,9 +188,13 @@ class DotsDot(wx.ToggleButton):
     if __debug__:
       print("User clicked (" + str(self._y) + ", " + str(self._x) + ")");
 
-    selected = self._game.selectDot(self._y, self._x);
+    selected = self._game.selectDot(self._y, self._x)
     if (not selected):
-      # XXX gc3: FIXME in this case we have to undo all the selected dots >.<
-      print ("XXX gc3: figure out hwo to undo all the selected dots, yo");
+      # if we didnt successfully add this dot to the current selection,
+      # then we ought to reset the selection in the game logic and ui, so the
+      # player can try again.
+      self._game.clearSelection()
+      self._parent.unselectAllDots()
     else:
+      # otherwise, just toggle the button to visually represent being selected
       self.SetValue(True);

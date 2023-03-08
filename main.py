@@ -2,8 +2,8 @@
 
 """
   Author: gc3
-  Program: dots game
-  Date:
+  Program: Dots, the game
+  Date: March, 2023
   Description: wanna relearn python
 """
 
