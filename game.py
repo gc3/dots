@@ -16,6 +16,10 @@ from util import DotsColor
 #   here to get anything done inside the game.
 #
 class DotsGame():
+  MOVE_ACCEPTED  = 0;
+  MOVE_REJECTED  = 1;
+  MOVE_ENDS_GAME = 2;
+
   def __init__(self, max_moves:int=20, height:int=10, width:int=10) -> None:
     self._width = width;
     self._height = height;
@@ -51,6 +55,12 @@ class DotsGame():
       player so far
     """
     return self._score;
+
+  def getMovesLeft(self) -> int:
+    """
+      Get how many moves are left until the game is over
+    """
+    return self._moves_left;
 
   def getHeight(self) -> int:
     """
@@ -116,7 +126,7 @@ class DotsGame():
 
     return True;
 
-  def executeSelection(self) -> bool:
+  def executeSelection(self) -> int:
     """
       Take the current selection and 'execute' it for the player, which will
       remove the correct dots, replace them with new ones, and adjust the
@@ -135,7 +145,7 @@ class DotsGame():
 
     # without a selection, there's nothing to do
     if (not self.hasSelection()):
-      return False
+      return self.MOVE_REJECTED
 
     # 'Remove' the current selection by
     #   1. grabbing the highest and lowest row from the selection in each column
@@ -165,7 +175,11 @@ class DotsGame():
 
     # we are done, so clear the selection for the player to go again
     self.clearSelection()
-    return True
+
+    if (self.isGameOver()):
+      return self.MOVE_ENDS_GAME
+    else:
+      return self.MOVE_ACCEPTED
 
 ############################################################
 #

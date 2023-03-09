@@ -26,17 +26,35 @@ class DotsFrame(wx.Frame):
     self._board = DotsBoard(self, self._game)
     box = wx.BoxSizer(wx.VERTICAL)
     box.Add(self._board, wx.SHAPED)
+    box.AddSpacer(10)
 
-    # Because we dont have touch events, we manually handle multi-selection, and
-    # this submits the currently selected dots as a "move"
+    # Adding a bottom row of player information including a button to submit
+    # their moves, the current score, and how many moves they have left
+    bottom_row = wx.BoxSizer(wx.HORIZONTAL)
+
     submit = wx.Button(self, wx.ID_ANY, "Submit Selection");
     submit.Bind(wx.EVT_BUTTON, self.onSubmitSelection)
-    box.AddSpacer(10)
-    box.Add(submit)
+    bottom_row.Add(submit)
+    bottom_row.AddSpacer(10)
 
-    self.CreateStatusBar() # A Statusbar in the bottom of the window
-    self.createFileMenus() # Setting up the menus and menubar.
+    self._score = wx.StaticText(self)
+    self.redrawScore()
+    bottom_row.Add(self._score)
+    bottom_row.AddSpacer(10)
 
+    self._moves_left = wx.StaticText(self)
+    self.redrawMovesLeft()
+    bottom_row.Add(self._moves_left)
+
+    box.Add(bottom_row)
+
+    # A Statusbar in the bottom of the window
+    self.CreateStatusBar()
+
+    # Setting up the menus and menubar.
+    self.createFileMenus()
+
+    # add it all into ourself, which is the main game window
     self.SetAutoLayout(True)
     self.SetSizer(box)
     self.Layout()
@@ -84,8 +102,8 @@ class DotsFrame(wx.Frame):
       Someone has requested a new game. Reset the game logic and
       the board that represents it afterwards
     """
-    self._game.reset();
-    self._board.redraw();
+    self._game.reset()
+    self.redrawGame()
 
     if __debug__:
       print ("New game! Reset all the things");
@@ -99,8 +117,46 @@ class DotsFrame(wx.Frame):
     if __debug__:
       print ("Selection Submitted for Evaluation!")
 
-    if (self._game.executeSelection()):
-      self._board.redraw()
+    move_result = self._game.executeSelection()
+    if (move_result == game.DotsGame.MOVE_ACCEPTED):
+      # if a move is accepted, the game state has been updated, so we just
+      # redraw for the player
+      self.redrawGame()
+
+    elif (move_result == game.DotsGame.MOVE_ENDS_GAME):
+      # if a move ends the game, we let them know their score and we start a new
+      # game for them
+      game_over_dialog = wx.MessageDialog(
+        self,
+        "Great Job!\nYour Score: " + str(self._game.getScore()),
+        caption="Game Over!",
+        style=wx.OK|wx.CENTRE
+      )
+      game_over_dialog.ShowModal()
+      self.onNewGame([])
+
+
+  def redrawGame(self) -> None:
+    self.redrawScore()
+    self.redrawMovesLeft()
+    self._board.redraw()
+
+  def redrawScore(self) -> None:
+    """
+      Using the current state of the game, update the player visible display for
+      their score by updating the label of the text element holding it.
+    """
+    self._score.SetLabel(label="Current Score: " + str(self._game.getScore()))
+
+  def redrawMovesLeft(self) -> None:
+    """
+      Using the current state of the game, update the player visible display for
+      the number of moves they left before the end of the game by updating the
+      label of the text element holding it.
+    """
+    self._moves_left.SetLabel(
+      label="Moves Left: " + str(self._game.getMovesLeft())
+    )
 
   def unselectAllDots(self):
     """
@@ -109,9 +165,6 @@ class DotsFrame(wx.Frame):
     """
     return self._board.unselectAllDots()
 
-  # XXX gc3 - TODO
-  #   - add a score and moves left counter to the UI
-  #   - add a game over pop up and have them choose 'quit' or 'play again'
 
 ###########################################################
 #
