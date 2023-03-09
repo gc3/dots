@@ -85,7 +85,7 @@ class DotsFrame(wx.Frame):
       the board that represents it afterwards
     """
     self._game.reset();
-    self._board.reset();
+    self._board.redraw();
 
     if __debug__:
       print ("New game! Reset all the things");
@@ -93,14 +93,14 @@ class DotsFrame(wx.Frame):
   def onSubmitSelection(self, event):
     """
       The user is requesting to lock in their selected dots and 'make their
-      move', so we will execute that move and optionally reset the board if we
+      move', so we will execute that move and optionally redraw the board if we
       need to fill in new dots.
     """
     if __debug__:
       print ("Selection Submitted for Evaluation!")
 
     if (self._game.executeSelection()):
-      self._board.reset()
+      self._board.redraw()
 
   def unselectAllDots(self):
     """
@@ -139,11 +139,11 @@ class DotsBoard(wx.GridSizer):
     self.Fit(self._parent); # tell the parent window to resize to match the dots
     self.Layout();          # force the re layout of the dots
 
-  def reset(self):
+  def redraw(self):
     """
-      Reset the board getting rid of all the dots and recreating them using the
-      game data that we already know. This means you should reset the game data
-      BEFORE calling this.
+      Redraw the board appearance by getting rid of all the dots and recreating
+      them using the game data that we already know. This means you should reset
+      the game data BEFORE calling this.
     """
     self.Clear(True);
     self.initialize();

@@ -95,8 +95,7 @@ class DotsGame():
     if (not self._board.isLocationValid(y, x)):
       return;
 
-    # XXX gc3: FIXME -- using tuples for a dot here is kinda sketchy
-    selected_dot = (y, x, self._board.getDotColor(y, x))
+    selected_dot = DotsGameDot(y, x, self._board.getDotColor(y, x))
 
     # starting a new selection, so add the first dot
     if (not self._current_selection):
@@ -108,7 +107,7 @@ class DotsGame():
     #   - is a different color than all the existing dots in the selection
     elif (selected_dot in self._current_selection or
           False or # XXX gc3: TODO check adjascency
-          self._current_selection[0][2] != selected_dot[2]):
+          self._current_selection[0].color != selected_dot.color):
       return False;
 
     # otherwise add this dot to the current set of selected dots
@@ -127,33 +126,42 @@ class DotsGame():
           will only allow valid dots to be added or fail.
     """
     if __debug__:
-      print (self._current_selection);
+      print ("selection: {");
+      for dot in self._current_selection:
+        print (
+          " (" + str(dot.y) + ", " + str(dot.x) + ", " + str(dot.color) + ")"
+        );
+      print ("}");
 
     # without a selection, there's nothing to do
     if (not self.hasSelection()):
       return False
 
     # 'Remove' the current selection by
-    #   1. copying the colors of the dots 'above' the selection in each column
-    #      into the spaces currently occupied by the selection.
-    #   2. marking dots that were copied as DOT_INVALID
-    #   3. fill in the dots marked with new colors
-
-    # grab the highest and lowest row from the selection in each column of the
-    # selection, so we know which dots to move down and how many spaces to move
-    # them XXX gc3: FIXME -- this version doesnt work yet, but i'm sleepy
-    affected_cols = [self._width] * self._width
+    #   1. grabbing the highest and lowest row from the selection in each column
+    #      of the selection, so we know which dots to move down and how many
+    #      spaces to move
+    affected_bottoms = [-1] * self._width
+    affected_tops = [self._width] * self._width
     for dot in self._current_selection:
-      if (dot[0] < affected_cols[dot[1]]):
-        affected_cols[dot[1]] = dot[0]
+      if (dot.y > affected_bottoms[dot.x]):
+        affected_bottoms[dot.x] = dot.y
 
-    print(affected_cols)
+      if (dot.y < affected_tops[dot.x]):
+        affected_tops[dot.x] = dot.y
 
-    self._board.fillEmptyDots()
+    #   2. for each column that is affected by this selection, asking the board
+    #      to use that data to shift the column down
+    for i in range(self._width):
+      if (affected_bottoms[i] != -1):
+        self._board.moveDotsDown(i, affected_tops[i], affected_bottoms[i])
 
     # make sure the player gets credit for their selection
     self._score += len(self._current_selection);
     self._moves_left -= 1;
+
+    if __debug__:
+      self._board.print();
 
     # we are done, so clear the selection for the player to go again
     self.clearSelection()
@@ -166,7 +174,7 @@ class DotsGame():
 #   color at a location in the board)
 #
 class DotsGameBoard():
-  def __init__(self, height:int=10, width:int=10) -> None:
+  def __init__(self, height:int, width:int) -> None:
     self._height = height
     self._width = width
     self._board = []
@@ -184,16 +192,29 @@ class DotsGameBoard():
     if __debug__:
       self.print()
 
-  def fillEmptyDots(self) -> None:
+  def moveDotsDown(self, col:int, top:int, bottom:int) -> None:
     """
-      Find all of the "empty" dots in the board and fill them with a new,
-      random color. This is useful after removing dots because of a successful
-      selection by the player.
+      Given the top and bottom coordinate for the given column, col, move
+      the dots above top in col down to bottom and replace the newly empty
+      dots with new colors
     """
+    # save the original dot colors so we can overwrite them later
+    col_dots = []
     for y in range(self._height):
-      for x in range(self._width):
-        if (self.getDotColor(y, x) == DotsColor.DOT_INVALID):
-          self_board[y][x] = random.randrange(DotsColor.DOT_MAX)
+      col_dots.append(self._board[y][col])
+
+    # move the dots down by 'shift' rows
+    shift = 1 + (bottom - top)
+    for y in range(self._height):
+      if (y < shift):
+        # recreate new dots for row entries at the top of this colum because we
+        # are filling 'down'
+        self._board[y][col] = random.randrange(DotsColor.DOT_MAX)
+
+      if (y < top):
+        # shift the dots down that are above the dots being removed
+        self._board[y+shift][col] = col_dots[y]
+
 
   def getDotColor(self, y:int, x:int) -> int:
     """
@@ -230,4 +251,14 @@ class DotsGameBoard():
 
     print ("");
 
-
+############################################################
+#
+# DotsGameDot
+#   A quick struct to wrap the (y, x) coordinates of a dot &
+#   its color
+#
+class DotsGameDot():
+  def __init__(self, y: int, x:int, color:int) -> None:
+    self.y = y
+    self.x = x
+    self.color = color
