@@ -95,6 +95,7 @@ class DotsFrame(wx.Frame):
     """
     if __debug__:
       print ("Someone hit the quit button!");
+
     self.Close(True)
 
   def onNewGame(self, event):
@@ -102,11 +103,11 @@ class DotsFrame(wx.Frame):
       Someone has requested a new game. Reset the game logic and
       the board that represents it afterwards
     """
-    self._game.reset()
-    self.redrawGame()
-
     if __debug__:
       print ("New game! Reset all the things");
+
+    self._game.reset()
+    self.redrawGame()
 
   def onSubmitSelection(self, event):
     """
@@ -135,8 +136,10 @@ class DotsFrame(wx.Frame):
       game_over_dialog.ShowModal()
       self.onNewGame([])
 
-
   def redrawGame(self) -> None:
+    """
+      Completely redraw the game based on the current state of the logic
+    """
     self.redrawScore()
     self.redrawMovesLeft()
     self._board.redraw()
@@ -187,7 +190,7 @@ class DotsBoard(wx.GridSizer):
     for y in range(self._game.getHeight()):
       for x in range(self._game.getWidth()):
         button = DotsDot(self._parent, self._game, y, x)
-        self.Add(button, y+x, wx.EXPAND)
+        self.Add(button, y + x, wx.EXPAND)
 
     self.Fit(self._parent); # tell the parent window to resize to match the dots
     self.Layout();          # force the re layout of the dots
@@ -230,7 +233,7 @@ class DotsDot(wx.ToggleButton):
     self._game = game
     self._color = game.getDotColor(y,x)
 
-    self.SetLabel(str(self._color));
+    self.SetLabel(" \n ")
     self.SetBackgroundColour(DotsColor.getRGB(self._color))
     self.Bind(wx.EVT_TOGGLEBUTTON, self.onClick)
 

@@ -83,7 +83,7 @@ class DotsGame():
     return self._board.getDotColor(y, x);
 
   ###
-  # Dot Selection Logic
+  # Dot Selection Logic / Move Execution
   #
   def hasSelection(self) -> bool:
     """
@@ -113,11 +113,11 @@ class DotsGame():
 
     # if we have a selection going, reset it if
     #   - is already in the selection set
-    #   - is not adjascent to an existing dot in the selection
     #   - is a different color than all the existing dots in the selection
-    elif (selected_dot in self._current_selection or
-          False or # XXX gc3: TODO check adjascency
-          self._current_selection[0].color != selected_dot.color):
+    #   - is not adjascent to an existing dot in the selection
+    elif ((selected_dot in self._current_selection) or
+          (self._current_selection[0].color != selected_dot.color) or
+          not self._board.isAdjascent(selected_dot, self._current_selection)):
       return False;
 
     # otherwise add this dot to the current set of selected dots
@@ -138,9 +138,7 @@ class DotsGame():
     if __debug__:
       print ("selection: {");
       for dot in self._current_selection:
-        print (
-          " (" + str(dot.y) + ", " + str(dot.x) + ", " + str(dot.color) + ")"
-        );
+        print ("  " + str(dot))
       print ("}");
 
     # without a selection, there's nothing to do
@@ -173,9 +171,9 @@ class DotsGame():
     if __debug__:
       self._board.print();
 
-    # we are done, so clear the selection for the player to go again
+    # move is executed, so clear the selection for the player to go again or
+    # end the game there are no moves left
     self.clearSelection()
-
     if (self.isGameOver()):
       return self.MOVE_ENDS_GAME
     else:
@@ -227,8 +225,7 @@ class DotsGameBoard():
 
       if (y < top):
         # shift the dots down that are above the dots being removed
-        self._board[y+shift][col] = col_dots[y]
-
+        self._board[y + shift][col] = col_dots[y]
 
   def getDotColor(self, y:int, x:int) -> int:
     """
@@ -250,6 +247,20 @@ class DotsGameBoard():
       raise IndexError("Width out of bounds");
 
     return True;
+
+  def isAdjascent(self, dot, selection) -> bool:
+    """
+      Given a dot and selection of dots (list), return true if the dot
+      is "adjascent" to at least one of the dots in the selection.
+    """
+    for item in selection:
+      y_delta = abs(dot.y - item.y)
+      x_delta = abs(dot.x - item.x)
+      if ((y_delta == 0 and x_delta == 1) or
+          (y_delta == 1 and x_delta == 0)):
+        return True
+
+    return False
 
   def print(self) -> None:
     """
@@ -276,3 +287,15 @@ class DotsGameDot():
     self.y = y
     self.x = x
     self.color = color
+
+  def __eq__(self, other):
+    return (
+      (self.y == other.y) and
+      (self.x == other.x) and
+      (self.color == other.color)
+    )
+
+  def __str__(self, ) -> str:
+    return (
+      "Dot(" + str(self.y) + ", " + str(self.x) + ", " + str(self.color) + ")"
+    )

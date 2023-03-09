@@ -15,7 +15,7 @@ import ui
 app = wx.App(False)
 
 # game logic fed to the UI so it can react
-game = game.DotsGame(max_moves=2)
+game = game.DotsGame()
 
 # instantiate the ui
 frame = ui.DotsFrame(None, wx.ID_ANY, "Dots by gc3", game)
