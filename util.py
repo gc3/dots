@@ -18,7 +18,8 @@ class DotsColor:
   DOT_BLUE    =  0
   DOT_GREEN   =  1
   DOT_RED     =  2
-  DOT_MAX     =  3
+  DOT_PURPLE  =  3
+  DOT_MAX     =  4
 
   def getRGB(color: int) -> tuple:
     """
@@ -34,6 +35,9 @@ class DotsColor:
 
       case DotsColor.DOT_RED:
         return (200, 0, 0, 255)
+
+      case DotsColor.DOT_PURPLE:
+        return (200, 0, 200, 255)
 
       case _:
         return (0, 0, 0, 0)
