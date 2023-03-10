@@ -18,14 +18,14 @@ from util import DotsColor
 #
 class DotsFrame(wx.Frame):
   def __init__(self, parent, ID, title, game):
-    wx.Frame.__init__(self, parent, ID, title, size=(800, 800))
+    wx.Frame.__init__(self, parent, ID, title, size=(700, 800))
 
     self._game = game;
 
 		# Setting up the dots board in a simple layout
     self._board = DotsBoard(self, self._game)
     box = wx.BoxSizer(wx.VERTICAL)
-    box.Add(self._board, wx.SHAPED)
+    box.Add(self._board, wx.EXPAND)
     box.AddSpacer(10)
 
     # Adding a bottom row of player information including a button to submit
@@ -176,7 +176,7 @@ class DotsFrame(wx.Frame):
 #
 class DotsBoard(wx.GridSizer):
   def __init__(self, parent, game:game.DotsGame):
-    wx.GridSizer.__init__(self, game.getWidth(), game.getHeight(), 5, 5)
+    wx.GridSizer.__init__(self, game.getWidth(), game.getHeight(), 0, 0)
 
     self._game = game
     self._parent = parent
@@ -192,8 +192,7 @@ class DotsBoard(wx.GridSizer):
         button = DotsDot(self._parent, self._game, y, x)
         self.Add(button, y + x, wx.EXPAND)
 
-    self.Fit(self._parent); # tell the parent window to resize to match the dots
-    self.Layout();          # force the re layout of the dots
+    self.Layout();  # force the re-drawing of the dots
 
   def redraw(self):
     """
@@ -213,9 +212,9 @@ class DotsBoard(wx.GridSizer):
     if (self._game.hasSelection()):
       return;
 
-    # we 'unselect' dots by simply toggling them to change their brightness
+    # we 'unselect' dots by telling them to toggle their visual state
     for item in self.GetChildren():
-      item.GetWindow().SetValue(False);
+      item.GetWindow().selected(False);
 
 ############################################################
 #
@@ -223,19 +222,33 @@ class DotsBoard(wx.GridSizer):
 #   The the dots a board is composed of that are like items you
 #   can multi-select via dragging as you play the game
 #
-class DotsDot(wx.ToggleButton):
+class DotsDot(wx.BitmapButton):
   def __init__(self, parent, game:game.DotsGame, y:int, x:int):
-    wx.Button.__init__(self, parent, wx.ID_ANY);
+    wx.BitmapButton.__init__(self, parent, wx.ID_ANY, style=wx.BORDER_NONE)
 
     self._y = y
     self._x = x
-    self._parent = parent
     self._game = game
+    self._parent = parent
     self._color = game.getDotColor(y,x)
 
-    self.SetLabel(" \n ")
-    self.SetBackgroundColour(DotsColor.getRGB(self._color))
-    self.Bind(wx.EVT_TOGGLEBUTTON, self.onClick)
+    self.SetBitmap(wx.BitmapBundle(DotsColor.getBitmap(self._color)))
+    self.Bind(wx.EVT_BUTTON, self.onClick)
+    self.selected(False)
+
+  def selected(self, darken=True) -> None:
+    """
+      If a button is currently selected, darken its background. If it's not,
+      then use a white background as the default.
+    """
+    self.Show(False);
+
+    if (darken):
+      self.SetBackgroundColour(wx.Colour(0,0,0,50))
+    else:
+      self.SetBackgroundColour(wx.Colour(255,255,255,255))
+
+    self.Show(True);
 
   def onClick(self, event):
     """
@@ -253,4 +266,4 @@ class DotsDot(wx.ToggleButton):
       self._parent.unselectAllDots()
     else:
       # otherwise, just toggle the button to visually represent being selected
-      self.SetValue(True);
+      self.selected(True)

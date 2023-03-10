@@ -7,6 +7,7 @@
   Description: utility code shared by the ui and game logic
 """
 
+import wx
 
 ############################################################
 #
@@ -18,28 +19,30 @@ class DotsColor:
   DOT_BLUE    =  0
   DOT_GREEN   =  1
   DOT_RED     =  2
-  DOT_PURPLE  =  3
+  DOT_YELLOW  =  3
   DOT_MAX     =  4
 
-  def getRGB(color: int) -> tuple:
+  def getBitmap(color: int) -> wx.Bitmap:
     """
       Turn the DotsColor constants into visible RGB tuples in order to
       set the background of this button.
     """
+    path_to_png = ""
     match color:
       case DotsColor.DOT_BLUE:
-        return (0, 100, 255, 255)
+        path_to_png = "images/blue.png"
 
       case DotsColor.DOT_GREEN:
-        return (0, 200, 0, 255)
+        path_to_png = "images/green.png"
 
       case DotsColor.DOT_RED:
-        return (200, 0, 0, 255)
+        path_to_png = "images/red.png"
 
-      case DotsColor.DOT_PURPLE:
-        return (200, 0, 200, 255)
+      case DotsColor.DOT_YELLOW:
+        path_to_png = "images/yellow.png"
 
       case _:
-        return (0, 0, 0, 0)
+        return None # XXX gc3: FIXME should be a raise exception
 
+    return wx.Bitmap(name=path_to_png, type=wx.BITMAP_TYPE_PNG)
 
