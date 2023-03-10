@@ -8,6 +8,7 @@
 """
 
 import wx
+import wx.adv
 import game
 import ui
 
@@ -15,10 +16,21 @@ import ui
 app = wx.App(False)
 
 # game logic fed to the UI so it can react
-game = game.DotsGame()
+game = game.DotsGame(max_moves=20)
+
+# Throw up a splash screen while the game loads
+bitmap = wx.Bitmap('images/splash.png', wx.BITMAP_TYPE_PNG)
+wx.adv.SplashScreen(
+  bitmap,
+  wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
+  1500,
+  None
+)
+wx.Yield()
 
 # instantiate the ui
 frame = ui.DotsFrame(None, wx.ID_ANY, "Dots by gc3", game)
+frame.Centre()
 frame.Show(True)
 
 # go go go!

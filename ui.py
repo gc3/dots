@@ -28,8 +28,26 @@ class DotsFrame(wx.Frame):
     box.Add(self._board, wx.EXPAND)
     box.AddSpacer(10)
 
-    # Adding a bottom row of player information including a button to submit
-    # their moves, the current score, and how many moves they have left
+    # A bottom row that has player information
+    bottom_row = self.createBottomRow()
+    box.Add(bottom_row)
+
+    # A Statusbar in the bottom of the window
+    self.CreateStatusBar()
+
+    # Setting up the menus and menubar.
+    self.createFileMenus()
+
+    # add it all into ourself, which is the main game window
+    self.SetAutoLayout(True)
+    self.SetSizer(box)
+    self.Layout()
+
+  def createBottomRow(self):
+    """
+      Adding a bottom row of player information including a button to submit
+      their moves, the current score, and how many moves they have left
+    """
     bottom_row = wx.BoxSizer(wx.HORIZONTAL)
 
     submit = wx.Button(self, wx.ID_ANY, "Submit Selection");
@@ -46,18 +64,8 @@ class DotsFrame(wx.Frame):
     self.redrawMovesLeft()
     bottom_row.Add(self._moves_left)
 
-    box.Add(bottom_row)
+    return bottom_row
 
-    # A Statusbar in the bottom of the window
-    self.CreateStatusBar()
-
-    # Setting up the menus and menubar.
-    self.createFileMenus()
-
-    # add it all into ourself, which is the main game window
-    self.SetAutoLayout(True)
-    self.SetSizer(box)
-    self.Layout()
 
   def createFileMenus(self):
     """
@@ -125,16 +133,19 @@ class DotsFrame(wx.Frame):
       self.redrawGame()
 
     elif (move_result == game.DotsGame.MOVE_ENDS_GAME):
-      # if a move ends the game, we let them know their score and we start a new
-      # game for them
+      # if a move ends the game, we let them know their score and give them
+      # the option to quit or play again
       game_over_dialog = wx.MessageDialog(
         self,
         "Great Job!\nYour Score: " + str(self._game.getScore()),
         caption="Game Over!",
-        style=wx.OK|wx.CENTRE
-      )
-      game_over_dialog.ShowModal()
-      self.onNewGame([])
+        style=wx.YES_NO|wx.CENTRE|wx.DIALOG_EX_METAL)
+      game_over_dialog.SetYesNoLabels("New Game", "Quit")
+
+      if (game_over_dialog.ShowModal() == wx.ID_YES):
+        self.onNewGame([])
+      else:
+        self.onQuit([])
 
   def redrawGame(self) -> None:
     """
