@@ -20,11 +20,11 @@ class DotsGame():
   MOVE_REJECTED  = 1;
   MOVE_ENDS_GAME = 2;
 
-  def __init__(self, max_moves:int=20, height:int=10, width:int=10) -> None:
-    self._width = width;
-    self._height = height;
+  def __init__(self, max_moves:int=20):
+    self._width = 10;
+    self._height = 10;
     self._moves_max = max_moves;
-    self._board = DotsGameBoard(height, width)
+    self._board = DotsGameBoard(self._height, self._width)
 
     self.reset()
 
@@ -186,7 +186,7 @@ class DotsGame():
 #   color at a location in the board)
 #
 class DotsGameBoard():
-  def __init__(self, height:int, width:int) -> None:
+  def __init__(self, height:int, width:int):
     self._height = height
     self._width = width
     self._board = []
@@ -283,7 +283,7 @@ class DotsGameBoard():
 #   its color
 #
 class DotsGameDot():
-  def __init__(self, y: int, x:int, color:int) -> None:
+  def __init__(self, y: int, x:int, color:int):
     self.y = y
     self.x = x
     self.color = color

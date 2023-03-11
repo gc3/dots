@@ -17,28 +17,39 @@ from util import DotsColor
 #   The main frame for a dots game that contains the board
 #
 class DotsFrame(wx.Frame):
+  # default window sizes
+  WIDTH   = 700
+  HEIGHT  = 815
+
+  # default colors
+  BG_WHITE  = wx.Colour(255, 255, 255, 255)
+  BG_GREY   = wx.Colour(50, 50, 50, 255)
+  BTN_GREY  = wx.Colour(200, 200, 200, 255)
+
   def __init__(self, parent, ID, title, game):
-    wx.Frame.__init__(self, parent, ID, title, size=(700, 800))
+    wx.Frame.__init__(
+      self,
+      parent,
+      ID,
+      title,
+      size=(DotsFrame.WIDTH, DotsFrame.HEIGHT))
 
     self._game = game;
-
-		# Setting up the dots board in a simple layout
-    self._board = DotsBoard(self, self._game)
-    box = wx.BoxSizer(wx.VERTICAL)
-    box.Add(self._board, wx.EXPAND)
-    box.AddSpacer(10)
-
-    # A bottom row that has player information
-    bottom_row = self.createBottomRow()
-    box.Add(bottom_row)
-
-    # A Statusbar in the bottom of the window
-    self.CreateStatusBar()
 
     # Setting up the menus and menubar.
     self.createFileMenus()
 
-    # add it all into ourself, which is the main game window
+		# Setting up the dots board in a simple layout
+    self._board = DotsBoard(self, self._game)
+    box = wx.BoxSizer(wx.VERTICAL)
+    box.Add(self._board, flag=wx.ALL|wx.EXPAND, border=10)
+
+    # A bottom row that has player information
+    bottom_row = self.createBottomRow()
+    box.Add(bottom_row, flag=wx.EXPAND)
+
+    # adjust the settings for this frame
+    self.SetBackgroundColour(DotsFrame.BG_WHITE)
     self.SetAutoLayout(True)
     self.SetSizer(box)
     self.Layout()
@@ -48,24 +59,36 @@ class DotsFrame(wx.Frame):
       Adding a bottom row of player information including a button to submit
       their moves, the current score, and how many moves they have left
     """
-    bottom_row = wx.BoxSizer(wx.HORIZONTAL)
+    panel = wx.Panel(self)
+    sizer = wx.BoxSizer(wx.HORIZONTAL)
+    flags = wx.ALL|wx.EXPAND
+    border_size = 25
 
-    submit = wx.Button(self, wx.ID_ANY, "Submit Selection");
+    # Button to submit the currently selected dots as a move
+    submit = wx.Button(panel)
+    submit.SetLabelMarkup("<big>Submit Selection</big>");
     submit.Bind(wx.EVT_BUTTON, self.onSubmitSelection)
-    bottom_row.Add(submit)
-    bottom_row.AddSpacer(10)
+    sizer.Add(submit, flag=flags, border=border_size);
 
-    self._score = wx.StaticText(self)
+    # force the button the left & text on the far right
+    sizer.AddStretchSpacer();
+
+    # show the score
+    self._score = wx.StaticText(panel)
+    self._score.SetFont(wx.Font(wx.FontInfo(18)))
     self.redrawScore()
-    bottom_row.Add(self._score)
-    bottom_row.AddSpacer(10)
+    sizer.Add(self._score, flag=flags, border=border_size);
 
-    self._moves_left = wx.StaticText(self)
+    # show the moves left in the game
+    self._moves_left = wx.StaticText(panel)
+    self._moves_left.SetFont(wx.Font(wx.FontInfo(18)))
     self.redrawMovesLeft()
-    bottom_row.Add(self._moves_left)
+    sizer.Add(self._moves_left, flag=flags, border=border_size);
 
-    return bottom_row
-
+    # contrast the color to the game background and return
+    panel.SetBackgroundColour(DotsFrame.BG_GREY)
+    panel.SetSizer(sizer)
+    return panel
 
   def createFileMenus(self):
     """
@@ -95,7 +118,6 @@ class DotsFrame(wx.Frame):
     """
     dialog = wx.MessageDialog(self, "My Dots!", "About Dots", wx.OK)
     dialog.ShowModal()
-    dialog.Destroy()
 
   def onQuit(self, event):
     """
@@ -235,7 +257,12 @@ class DotsBoard(wx.GridSizer):
 #
 class DotsDot(wx.BitmapButton):
   def __init__(self, parent, game:game.DotsGame, y:int, x:int):
-    wx.BitmapButton.__init__(self, parent, wx.ID_ANY, style=wx.BORDER_NONE)
+    wx.BitmapButton.__init__(
+      self,
+      parent,
+      wx.ID_ANY,
+      style=wx.BORDER_NONE, # makes the buttons look like dots
+      size=wx.Size(70, 70)) # make the size match the bitmaps
 
     self._y = y
     self._x = x
@@ -255,9 +282,9 @@ class DotsDot(wx.BitmapButton):
     self.Show(False);
 
     if (darken):
-      self.SetBackgroundColour(wx.Colour(0,0,0,50))
+      self.SetBackgroundColour(DotsFrame.BTN_GREY)
     else:
-      self.SetBackgroundColour(wx.Colour(255,255,255,255))
+      self.SetBackgroundColour(DotsFrame.BG_WHITE)
 
     self.Show(True);
 
