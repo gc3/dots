@@ -7,9 +7,9 @@
   Description: all the ui lives here for convenience as a learner project
 """
 
-import wx
 import game
 from util import DotsColor
+import wx
 
 ###########################################################
 #
@@ -17,22 +17,13 @@ from util import DotsColor
 #   The main frame for a dots game that contains the board
 #
 class DotsFrame(wx.Frame):
-  # default window sizes
-  WIDTH   = 700
-  HEIGHT  = 815
 
-  # default colors
-  BG_WHITE  = wx.Colour(255, 255, 255, 255)
+  # Some default colors to be reused
   BG_GREY   = wx.Colour(50, 50, 50, 255)
-  BTN_GREY  = wx.Colour(200, 200, 200, 255)
+  BG_WHITE  = wx.Colour(255, 255, 255, 255)
 
   def __init__(self, parent, ID, title, game):
-    wx.Frame.__init__(
-      self,
-      parent,
-      ID,
-      title,
-      size=(DotsFrame.WIDTH, DotsFrame.HEIGHT))
+    wx.Frame.__init__(self, parent, ID, title)
 
     self._game = game;
 
@@ -40,13 +31,18 @@ class DotsFrame(wx.Frame):
     self.createFileMenus()
 
 		# Setting up the dots board in a simple layout
-    self._board = DotsBoard(self, self._game)
     box = wx.BoxSizer(wx.VERTICAL)
+
+    self._board = DotsBoard(self, self._game)
     box.Add(self._board, flag=wx.ALL|wx.EXPAND, border=10)
 
     # A bottom row that has player information
     bottom_row = self.createBottomRow()
     box.Add(bottom_row, flag=wx.EXPAND)
+
+    # This is magic that resizes the sizer and this frame to fit the contents
+    # each time it's redrawn, otherwise we'd specify sizes above
+    box.SetSizeHints(self)
 
     # adjust the settings for this frame
     self.SetBackgroundColour(DotsFrame.BG_WHITE)
@@ -65,6 +61,7 @@ class DotsFrame(wx.Frame):
     border_size = 25
 
     # Button to submit the currently selected dots as a move
+    # XXX gc3: FIXME can we use wx.MouseEventsManager make this click + drag?
     submit = wx.Button(panel)
     submit.SetLabelMarkup("<big>Submit Selection</big>");
     submit.Bind(wx.EVT_BUTTON, self.onSubmitSelection)
@@ -112,6 +109,20 @@ class DotsFrame(wx.Frame):
     menubar.Append(filemenu,"File")
     self.SetMenuBar(menubar)
 
+  def createGameOverScreen(self):
+    # XXX gc3: FIXME make this more fun
+    game_over_dialog = wx.MessageDialog(
+      self,
+      "Great Job!\nYour Final Score: " + str(self._game.getScore()),
+      caption="Game Over!",
+      style=wx.YES_NO|wx.CENTRE|wx.DIALOG_EX_METAL)
+    game_over_dialog.SetYesNoLabels("New Game", "Quit")
+
+    if (game_over_dialog.ShowModal() == wx.ID_YES):
+      self.onNewGame([])
+    else:
+      self.onQuit([])
+
   def onAbout(self,  event):
     """
 		  A message dialog box with an OK button
@@ -149,25 +160,15 @@ class DotsFrame(wx.Frame):
       print ("Selection Submitted for Evaluation!")
 
     move_result = self._game.executeSelection()
-    if (move_result == game.DotsGame.MOVE_ACCEPTED):
-      # if a move is accepted, the game state has been updated, so we just
-      # redraw for the player
+
+    # if the move is not a problem, update the ui
+    if (move_result != game.DotsGame.MOVE_REJECTED):
       self.redrawGame()
 
-    elif (move_result == game.DotsGame.MOVE_ENDS_GAME):
-      # if a move ends the game, we let them know their score and give them
-      # the option to quit or play again
-      game_over_dialog = wx.MessageDialog(
-        self,
-        "Great Job!\nYour Score: " + str(self._game.getScore()),
-        caption="Game Over!",
-        style=wx.YES_NO|wx.CENTRE|wx.DIALOG_EX_METAL)
-      game_over_dialog.SetYesNoLabels("New Game", "Quit")
-
-      if (game_over_dialog.ShowModal() == wx.ID_YES):
-        self.onNewGame([])
-      else:
-        self.onQuit([])
+    # if a move ends the game, we let them know their score and give them
+    # the option to quit or play again
+    if (move_result == game.DotsGame.MOVE_ENDS_GAME):
+      self.createGameOverScreen()
 
   def redrawGame(self) -> None:
     """
@@ -223,7 +224,7 @@ class DotsBoard(wx.GridSizer):
     for y in range(self._game.getHeight()):
       for x in range(self._game.getWidth()):
         button = DotsDot(self._parent, self._game, y, x)
-        self.Add(button, y + x, wx.EXPAND)
+        self.Add(button, y + x, flag=wx.EXPAND)
 
     self.Layout();  # force the re-drawing of the dots
 
@@ -256,36 +257,32 @@ class DotsBoard(wx.GridSizer):
 #   can multi-select via dragging as you play the game
 #
 class DotsDot(wx.BitmapButton):
-  def __init__(self, parent, game:game.DotsGame, y:int, x:int):
+  def __init__(self, parent:DotsFrame, game:game.DotsGame, y:int, x:int):
     wx.BitmapButton.__init__(
       self,
       parent,
       wx.ID_ANY,
+      bitmap=wx.BitmapBundle(DotsColor.getBitmap(game.getDotColor(y, x))),
       style=wx.BORDER_NONE, # makes the buttons look like dots
-      size=wx.Size(70, 70)) # make the size match the bitmaps
+      size=wx.Size(69, 69)) # make the size match the bitmaps + 5px border
 
     self._y = y
     self._x = x
     self._game = game
-    self._parent = parent
-    self._color = game.getDotColor(y,x)
+    self._frame = parent
 
-    self.SetBitmap(wx.BitmapBundle(DotsColor.getBitmap(self._color)))
     self.Bind(wx.EVT_BUTTON, self.onClick)
     self.selected(False)
 
   def selected(self, darken=True) -> None:
     """
-      If a button is currently selected, darken its background. If it's not,
-      then use a white background as the default.
+      If a dot is currently selected, darken its background.
+      If it's not, then use the default background (white).
     """
     self.Show(False);
-
-    if (darken):
-      self.SetBackgroundColour(DotsFrame.BTN_GREY)
-    else:
-      self.SetBackgroundColour(DotsFrame.BG_WHITE)
-
+    self.SetBackgroundColour(
+      DotsColor.BG_SELECTED if darken else DotsColor.BG_DEFAULT
+    )
     self.Show(True);
 
   def onClick(self, event):
@@ -301,7 +298,7 @@ class DotsDot(wx.BitmapButton):
       # then we ought to reset the selection in the game logic and ui, so the
       # player can try again.
       self._game.clearSelection()
-      self._parent.unselectAllDots()
+      self._frame.unselectAllDots()
     else:
       # otherwise, just toggle the button to visually represent being selected
       self.selected(True)
