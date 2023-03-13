@@ -26,10 +26,14 @@ class DotsFrame(wx.Frame):
   SIZER_FLAGS = wx.ALIGN_CENTER | wx.ALL
   SIZER_BORDER = 25
 
+
   def __init__(self, parent, ID, title, dots_game:game.DotsGame):
     wx.Frame.__init__(self, parent, ID, title)
 
     self._game = dots_game
+
+    self.FONT_BIG = wx.Font(wx.FontInfo(18))
+    self.FONT_GIANT = wx.Font(wx.FontInfo(30).Bold(True))
 
     # Setting up the menus and menubar.
     self.createFileMenus()
@@ -66,12 +70,12 @@ class DotsFrame(wx.Frame):
 
     # show the score
     self._score = wx.StaticText(panel)
-    self._score.SetFont(wx.Font(wx.FontInfo(18)))
+    self._score.SetFont(self.FONT_BIG)
     self.redrawScore()
 
     # show the moves left in the game
     self._moves_left = wx.StaticText(panel)
-    self._moves_left.SetFont(wx.Font(wx.FontInfo(18)))
+    self._moves_left.SetFont(self.FONT_BIG)
     self.redrawMovesLeft()
 
     sizer.AddStretchSpacer()
@@ -122,7 +126,7 @@ class DotsFrame(wx.Frame):
 
     #   2. a message to show the user their score and salute them
     message = wx.StaticText(top_panel, style=wx.ALIGN_CENTRE_HORIZONTAL)
-    message.SetFont(wx.Font(wx.FontInfo(30).Bold(True)))
+    message.SetFont(self.FONT_GIANT)
     message.SetLabel(
       "Great Job!\n \n" +
       "Your Final Score: %d \n \n \n" % self._game.getScore() +
@@ -136,19 +140,18 @@ class DotsFrame(wx.Frame):
 
     # Bottom:  Buttons to allow for starting a new game or quitting
     buttons = wx.Panel(dialog, size=wx.Size(bmp.GetWidth(), bmp.GetHeight()//5))
-
     button_sizer = wx.BoxSizer(wx.HORIZONTAL)
-    button_sizer.AddStretchSpacer()
-    button_sizer.Add( # XXX gc3: TODO make these bigger
-      wx.Button(buttons, id=wx.ID_OK, label="New Game"),
-      flag=self.SIZER_FLAGS, border=self.SIZER_BORDER
-    )
-    button_sizer.Add(
-      wx.Button(buttons, id=wx.ID_CANCEL, label="Quit"),
-      flag=self.SIZER_FLAGS, border=self.SIZER_BORDER
-    )
-    button_sizer.AddStretchSpacer()
     buttons.SetSizer(button_sizer)
+
+    button_sizer.AddStretchSpacer()
+    new_g_btn = wx.Button(buttons, id=wx.ID_OK, label="\nNew Game\n")
+    new_g_btn.SetFont(self.FONT_BIG)
+    button_sizer.Add(new_g_btn, flag=self.SIZER_FLAGS, border=self.SIZER_BORDER)
+
+    quit_btn = wx.Button(buttons, id=wx.ID_CANCEL, label="\nQuit\n")
+    quit_btn.SetFont(self.FONT_BIG)
+    button_sizer.Add(quit_btn, flag=self.SIZER_FLAGS, border=self.SIZER_BORDER)
+    button_sizer.AddStretchSpacer()
 
     # layout the top & bottom
     dialog_sizer = wx.BoxSizer(wx.VERTICAL)
