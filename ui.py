@@ -9,7 +9,6 @@
 
 import wx
 import game
-from wx.adv import AnimationCtrl
 from util import DotsColor, decodeMouseEvent
 
 ###########################################################
@@ -300,7 +299,7 @@ class DotsBoard(wx.Panel):
     else:
       self._parent.executeSelection()
 
-    return True;
+    return True
 
   def redraw(self):
     """
@@ -333,7 +332,6 @@ class DotsBoard(wx.Panel):
 
       Return if this dot was selected.
     """
-    was_selected = self._game.isSelected(y,x)
     selected = self._game.selectDot(y, x)
     if (not selected):
       # if we didnt successfully add this dot to the current selection,

@@ -34,7 +34,7 @@ def decodeMouseEvent(event:wx.MouseEvent):
   """
   event_type = event.GetEventType()
   if event_type == wx.EVT_LEFT_DOWN._getEvtType():
-      return "EVT_LEFT_DOWN"
+    return "EVT_LEFT_DOWN"
   elif event_type ==  wx.EVT_LEFT_UP._getEvtType():
     return "wxEVT_LEFT_UP "
   elif event_type ==  wx.EVT_LEFT_DCLICK._getEvtType():
