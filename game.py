@@ -146,7 +146,7 @@ class DotsGame():
           will only allow valid dots to be added or fail.
     """
     if __debug__:
-      print ("selection: {")
+      print ("Selection Execute! {")
       for dot in self._current_selection:
         print ("  " + str(dot))
       print ("}")
@@ -259,7 +259,6 @@ class DotsGameBoard():
       Given a dot and selection of dots (list), return true if the dot
       is "adjascent" to at least one of the dots in the selection.
     """
-    # XXX gc3: TODO consider adding diagonal selection if the color matches
     for item in selection:
       y_delta = abs(dot.y - item.y)
       x_delta = abs(dot.x - item.x)

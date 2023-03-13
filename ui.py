@@ -35,22 +35,22 @@ class DotsFrame(wx.Frame):
     self.createFileMenus()
 
 		# Setting up the dots board in a simple layout
-    box = wx.BoxSizer(wx.VERTICAL)
+    box_sizer = wx.BoxSizer(wx.VERTICAL)
 
     self._board = DotsBoard(self, self._game)
-    box.Add(self._board, flag=wx.ALL|wx.EXPAND, border=10)
+    box_sizer.Add(self._board, flag=wx.ALL|wx.EXPAND, border=10)
 
     # A bottom row that has player information
     bottom_row = self.createBottomRow()
-    box.Add(bottom_row, flag=wx.EXPAND)
+    box_sizer.Add(bottom_row, flag=wx.EXPAND)
 
     # This is magic that resizes the sizer and this frame to fit the contents
     # each time it's redrawn, otherwise we'd specify sizes above
-    box.SetSizeHints(self)
+    box_sizer.SetSizeHints(self)
 
     # adjust the settings for this frame
     self.SetBackgroundColour(DotsFrame.BG_WHITE)
-    self.SetSizer(box)
+    self.SetSizer(box_sizer)
     self.Layout()
 
   ###
@@ -135,7 +135,7 @@ class DotsFrame(wx.Frame):
     top_panel.SetSizer(top_panel_sizer)
 
     # Bottom:  Buttons to allow for starting a new game or quitting
-    buttons = wx.Panel(dialog, size=wx.Size(bmp.GetWidth(), 100))
+    buttons = wx.Panel(dialog, size=wx.Size(bmp.GetWidth(), bmp.GetHeight()//5))
 
     button_sizer = wx.BoxSizer(wx.HORIZONTAL)
     button_sizer.AddStretchSpacer()
@@ -154,12 +154,13 @@ class DotsFrame(wx.Frame):
     dialog_sizer = wx.BoxSizer(wx.VERTICAL)
     dialog_sizer.Add(top_panel)
     dialog_sizer.AddStretchSpacer() # force the top and bottom apart
-    dialog_sizer.Add(buttons)
+    dialog_sizer.Add(buttons, flag=wx.EXPAND)
 
     dialog.SetSizerAndFit(dialog_sizer)
     dialog.Centre()
 
     # show this dialog and do what the player indicates
+    self.HideWithEffect(wx.SHOW_EFFECT_ROLL_TO_BOTTOM, timeout=500)
     if (dialog.ShowModal() == wx.ID_OK):
       self.onNewGame([])
     else:
@@ -182,8 +183,7 @@ class DotsFrame(wx.Frame):
     if __debug__:
       print ("Someone hit the quit button!")
 
-    self.HideWithEffect(wx.SHOW_EFFECT_EXPAND, timeout=1000)
-    self.Close(True)
+    self.Destroy()
 
   def onNewGame(self, event) -> None:
     """
@@ -193,10 +193,13 @@ class DotsFrame(wx.Frame):
     if __debug__:
       print ("New game! Reset all the things")
 
-    self.HideWithEffect(wx.SHOW_EFFECT_ROLL_TO_BOTTOM, timeout=500)
+    if (self.IsShown()):
+      self.HideWithEffect(wx.SHOW_EFFECT_ROLL_TO_BOTTOM, timeout=500)
+    else:
+      self.ShowWithEffect(wx.SHOW_EFFECT_ROLL_TO_TOP, timeout=500)
+
     self._game.reset()
     self.redrawGame()
-    self.ShowWithEffect(wx.SHOW_EFFECT_ROLL_TO_TOP, timeout=500)
 
   ###
   # (re) Drawing the game contents
@@ -233,9 +236,6 @@ class DotsFrame(wx.Frame):
       will execute that move and optionally redraw the board if we need to fill
       in new dots.
     """
-    if __debug__:
-      print ("Selection Submitted for Evaluation!")
-
     move_result = self._game.executeSelection()
 
     # if the move is not a problem, update the ui
