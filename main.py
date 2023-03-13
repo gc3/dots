@@ -8,10 +8,10 @@
 """
 
 import argparse
+import wx
 import game
 import ui
 import util
-import wx
 
 PROGRAM_NAME  = "Dots by gc3"
 DEFAULT_MOVES = 20

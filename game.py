@@ -16,14 +16,14 @@ from util import DotsColor
 #   here to get anything done inside the game.
 #
 class DotsGame():
-  MOVE_ACCEPTED  = 0;
-  MOVE_REJECTED  = 1;
-  MOVE_ENDS_GAME = 2;
+  MOVE_ACCEPTED  = 0
+  MOVE_REJECTED  = 1
+  MOVE_ENDS_GAME = 2
 
   def __init__(self, max_moves:int=20):
-    self._width = 10;
-    self._height = 10;
-    self._moves_max = max_moves;
+    self._width = 10
+    self._height = 10
+    self._moves_max = max_moves
     self._board = DotsGameBoard(self._height, self._width)
 
     self.reset()
@@ -35,16 +35,16 @@ class DotsGame():
     """
       Reset the game by re-initializing all of the player interacting data
     """
-    self._moves_left = self._moves_max;
-    self._score = 0;
-    self._current_selection = [];
-    self._board.initialize();
+    self._moves_left = self._moves_max
+    self._score = 0
+    self._current_selection = []
+    self._board.initialize()
 
   def isGameOver(self) -> bool:
     """
       Is the game over? It is when there's no more moves left
     """
-    return (self._moves_left <= 0);
+    return (self._moves_left <= 0)
 
   ###
   # Accessors
@@ -54,25 +54,25 @@ class DotsGame():
       Get the current game score which is the number of dots removed by the
       player so far
     """
-    return self._score;
+    return self._score
 
   def getMovesLeft(self) -> int:
     """
       Get how many moves are left until the game is over
     """
-    return self._moves_left;
+    return self._moves_left
 
   def getHeight(self) -> int:
     """
       The vertical size of the game board in number of dots (number of rows)
     """
-    return self._height;
+    return self._height
 
   def getWidth(self) -> int:
     """
       The horizontal size of the game board in number of dots (number of cols)
     """
-    return self._width;
+    return self._width
 
 
   def getDotColor(self, y:int, x:int) -> int:
@@ -80,7 +80,7 @@ class DotsGame():
       A pass through to the game board that gets the color of the dot
       at location (y,x)
     """
-    return self._board.getDotColor(y, x);
+    return self._board.getDotColor(y, x)
 
   ###
   # Dot Selection Logic / Move Execution
@@ -90,6 +90,14 @@ class DotsGame():
       Return True iff any dots are selected
     """
     return (len(self._current_selection) != 0)
+
+  def isSelected(self, y:int, x:int) -> bool:
+    """
+      Return True iff the given coordinates identify a dot in the current
+      set of selected dots being tracked
+    """
+    tmp = DotsGameDot(y, x, -1)
+    return tmp in self._current_selection
 
   def clearSelection(self) -> None:
     """
@@ -103,28 +111,30 @@ class DotsGame():
       to the current selection
     """
     if (not self._board.isLocationValid(y, x)):
-      return;
+      return False
 
     selected_dot = DotsGameDot(y, x, self._board.getDotColor(y, x))
 
     # starting a new selection, so add the first dot
     if (not self._current_selection):
-      self._current_selection.append(selected_dot);
+      self._current_selection.append(selected_dot)
+
+    # if we have already seen this dot, ignore it
+    elif (selected_dot in self._current_selection):
+      pass
 
     # if we have a selection going, reset it if
-    #   - is already in the selection set
     #   - is a different color than all the existing dots in the selection
     #   - is not adjascent to an existing dot in the selection
-    elif ((selected_dot in self._current_selection) or
-          (self._current_selection[0].color != selected_dot.color) or
+    elif ((self._current_selection[0].color != selected_dot.color) or
           not self._board.isAdjascent(selected_dot, self._current_selection)):
-      return False;
+      return False
 
     # otherwise add this dot to the current set of selected dots
     else:
-      self._current_selection.append(selected_dot);
+      self._current_selection.append(selected_dot)
 
-    return True;
+    return True
 
   def executeSelection(self) -> int:
     """
@@ -136,10 +146,10 @@ class DotsGame():
           will only allow valid dots to be added or fail.
     """
     if __debug__:
-      print ("selection: {");
+      print ("selection: {")
       for dot in self._current_selection:
         print ("  " + str(dot))
-      print ("}");
+      print ("}")
 
     # without a selection, there's nothing to do
     if (not self.hasSelection()):
@@ -165,19 +175,16 @@ class DotsGame():
         self._board.moveDotsDown(i, affected_tops[i], affected_bottoms[i])
 
     # make sure the player gets credit for their selection
-    self._score += len(self._current_selection);
-    self._moves_left -= 1;
+    self._score += len(self._current_selection)
+    self._moves_left -= 1
 
     if __debug__:
-      self._board.print();
+      self._board.print()
 
     # move is executed, so clear the selection for the player to go again or
     # end the game there are no moves left
     self.clearSelection()
-    if (self.isGameOver()):
-      return self.MOVE_ENDS_GAME
-    else:
-      return self.MOVE_ACCEPTED
+    return self.MOVE_ENDS_GAME if self.isGameOver() else self.MOVE_ACCEPTED
 
 ############################################################
 #
@@ -231,28 +238,28 @@ class DotsGameBoard():
     """
       Return the color (from DotsColor) at (y,x) in this board
     """
-    if (self.isLocationValid(y, x)):
-      return self._board[y][x];
-    else:
-      return DotsColor.DOT_INVALID;
+    return (
+      self._board[y][x] if self.isLocationValid(y, x) else DotsColor.DOT_INVALID
+    )
 
   def isLocationValid(self, y:int, x:int) -> bool:
     """
       Test if the given (y, x) coordinates are valid for this board
     """
     if (y < 0 or y >= self._height):
-      raise IndexError("Height out of bounds");
+      raise IndexError("Height out of bounds")
 
     if (x < 0 or x >= self._width):
-      raise IndexError("Width out of bounds");
+      raise IndexError("Width out of bounds")
 
-    return True;
+    return True
 
   def isAdjascent(self, dot, selection) -> bool:
     """
       Given a dot and selection of dots (list), return true if the dot
       is "adjascent" to at least one of the dots in the selection.
     """
+    # XXX gc3: TODO consider adding diagonal selection if the color matches
     for item in selection:
       y_delta = abs(dot.y - item.y)
       x_delta = abs(dot.x - item.x)
@@ -266,15 +273,15 @@ class DotsGameBoard():
     """
       A utility helper that prints out this board's contents
     """
-    print ("Board Contents:");
+    print ("Board Contents:")
 
     for y in range(self._height):
-      row = [];
+      row = []
       for x in range(self._width):
-        row.append(self._board[y][x]);
-      print (row);
+        row.append(self._board[y][x])
+      print (row)
 
-    print ("");
+    print ("")
 
 ############################################################
 #
@@ -291,11 +298,8 @@ class DotsGameDot():
   def __eq__(self, other):
     return (
       (self.y == other.y) and
-      (self.x == other.x) and
-      (self.color == other.color)
+      (self.x == other.x)
     )
 
   def __str__(self, ) -> str:
-    return (
-      "Dot(" + str(self.y) + ", " + str(self.x) + ", " + str(self.color) + ")"
-    )
+    return "Dot(%d, %d, %d)" % (self.y, self.x, self.color)
