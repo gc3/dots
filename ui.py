@@ -117,10 +117,10 @@ class DotsFrame(wx.Frame):
     top_panel = wx.Panel(dialog, size=wx.Size(bmp.GetWidth(), bmp.GetHeight()))
     top_panel_sizer = wx.BoxSizer(wx.VERTICAL)
 
-    #   - a pretty background image
+    #   1. a pretty background image
     wx.StaticBitmap(top_panel, bitmap=bmp)
 
-    #   - a message to show the user their score and salute them
+    #   2. a message to show the user their score and salute them
     message = wx.StaticText(top_panel, style=wx.ALIGN_CENTRE_HORIZONTAL)
     message.SetFont(wx.Font(wx.FontInfo(30).Bold(True)))
     message.SetLabel(

@@ -16,6 +16,7 @@ from util import DotsColor
 #   here to get anything done inside the game.
 #
 class DotsGame():
+
   MOVE_ACCEPTED  = 0
   MOVE_REJECTED  = 1
   MOVE_ENDS_GAME = 2
