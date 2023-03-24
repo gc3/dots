@@ -18,7 +18,7 @@ def createSplashScreen():
   """
     Create a splash screen for the game
   """
-  bitmap = wx.Bitmap('images/splash.png', wx.BITMAP_TYPE_PNG)
+  bitmap = wx.Bitmap('../images/splash.png', wx.BITMAP_TYPE_PNG)
   wx.adv.SplashScreen(
     bitmap,
     wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
@@ -104,16 +104,16 @@ class DotsColor:
     path_to_png = ""
     match color:
       case DotsColor.DOT_BLUE:
-        path_to_png = "images/blue.png"
+        path_to_png = "../images/blue.png"
 
       case DotsColor.DOT_GREEN:
-        path_to_png = "images/green.png"
+        path_to_png = "../images/green.png"
 
       case DotsColor.DOT_RED:
-        path_to_png = "images/red.png"
+        path_to_png = "../images/red.png"
 
       case DotsColor.DOT_YELLOW:
-        path_to_png = "images/yellow.png"
+        path_to_png = "../images/yellow.png"
 
       case _:
         raise IndexError("Color(%d) given is invalid" % color)
