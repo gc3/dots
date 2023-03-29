@@ -116,7 +116,7 @@ class DotsFrame(wx.Frame):
     dialog = wx.Dialog(self, title="Game Over", style=wx.SYSTEM_MENU)
 
     # Top: A panel to hold ...
-    bmp = wx.Bitmap('../images/game_over.jpg')
+    bmp = wx.Bitmap(Constants.IMG_PATH+'game_over.jpg')
     top_panel = wx.Panel(dialog, size=wx.Size(bmp.GetWidth(), bmp.GetHeight()))
     top_panel_sizer = wx.BoxSizer(wx.VERTICAL)
 

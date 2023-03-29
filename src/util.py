@@ -10,6 +10,9 @@
 import wx
 import wx.adv
 
+class Constants :
+  IMG_PATH = "images/"
+
 ############################################################
 #
 # Utility Functions
@@ -18,7 +21,7 @@ def createSplashScreen():
   """
     Create a splash screen for the game
   """
-  bitmap = wx.Bitmap('../images/splash.png', wx.BITMAP_TYPE_PNG)
+  bitmap = wx.Bitmap(Constants.IMG_PATH+'splash.png', wx.BITMAP_TYPE_PNG)
   wx.adv.SplashScreen(
     bitmap,
     wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
@@ -33,8 +36,9 @@ def decodeMouseEvent(event:wx.MouseEvent):
     what's actually going on. Useful for debugging.
   """
   event_type = event.GetEventType()
+
   if event_type == wx.EVT_LEFT_DOWN._getEvtType():
-    return "EVT_LEFT_DOWN"
+    return "wxEVT_LEFT_DOWN"
   elif event_type ==  wx.EVT_LEFT_UP._getEvtType():
     return "wxEVT_LEFT_UP "
   elif event_type ==  wx.EVT_LEFT_DCLICK._getEvtType():
@@ -101,19 +105,19 @@ class DotsColor:
       Turn the DotsColor constants into visible RGB tuples in order to
       set the background of this button.
     """
-    path_to_png = ""
+    path_to_png = Constants.IMG_PATH
     match color:
       case DotsColor.DOT_BLUE:
-        path_to_png = "../images/blue.png"
+        path_to_png += "blue.png"
 
       case DotsColor.DOT_GREEN:
-        path_to_png = "../images/green.png"
+        path_to_png += "green.png"
 
       case DotsColor.DOT_RED:
-        path_to_png = "../images/red.png"
+        path_to_png += "red.png"
 
       case DotsColor.DOT_YELLOW:
-        path_to_png = "../images/yellow.png"
+        path_to_png += "yellow.png"
 
       case _:
         raise IndexError("Color(%d) given is invalid" % color)

@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['main.py']
+APP = ['src/main.py']
 DATA_FILES = [
   ('images/', ['images/green.png', 'images/splash.png', 'images/blue.png',
                'images/game_over.jpg', 'images/red.png', 'images/yellow.png'],
