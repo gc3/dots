@@ -156,6 +156,12 @@ class DotsGame():
     if (not self.hasSelection()):
       return self.MOVE_REJECTED
 
+    # if we only have 1 dot selected, we dont do anything. this fixes both
+    # single click issues and enforces a rule that you have to have at least 2
+    # dots connected to make a proper selection which feels right
+    if (len(self._current_selection) == 1):
+      return self.MOVE_REJECTED
+
     # 'Remove' the current selection by
     #   1. grabbing the highest and lowest row from the selection in each column
     #      of the selection, so we know which dots to move down and how many
